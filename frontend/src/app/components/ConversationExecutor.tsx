@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Form, Select, SelectItem, Button, InlineLoading, Tile, Tag, Grid, Column } from '@carbon/react';
+import {
+	Form,
+	Select,
+	SelectItem,
+	Button,
+	InlineLoading,
+	Tile,
+	Tag,
+	Grid,
+	Column,
+	InlineNotification
+} from '@carbon/react';
 import { PlayFilled, Chat } from '@carbon/icons-react';
 import { api, Conversation } from '@/lib/api';
 import { useAgents } from '@/lib/AppDataContext';
@@ -193,12 +204,18 @@ export default function ConversationExecutor() {
 				{error && <Tile className={styles.errorTile}>{error}</Tile>}
 
 				{successMessage && (
-					<Tile className={styles.successTile}>
-						<div>{successMessage}</div>
+					<InlineNotification
+						kind="success"
+						title="Execution queued"
+						subtitle={successMessage}
+						hideCloseButton={false}
+						onCloseButtonClick={() => setSuccessMessage(null)}
+						style={{ marginTop: '1rem' }}
+					>
 						<Button kind="tertiary" size="sm" onClick={() => router.push('/jobs')}>
 							View jobs
 						</Button>
-					</Tile>
+					</InlineNotification>
 				)}
 			</Column>
 
