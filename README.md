@@ -8,12 +8,12 @@ Use it to script realistic agent conversations, run them against agent configura
 
 ## Screenshots
 
-| Dashboard | Conversation detail |
-|---|---|
+| Dashboard                                                                                                                     | Conversation detail                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | ![Dashboard showing first-run checklist, summary metrics, job status, and agent performance table](docs/assets/dashboard.png) | ![Conversation detail page showing the script alongside the latest session transcript](docs/assets/conversation.png) |
 
-| Quick execute | Session |
-|---|---|
+| Quick execute                                                                                                               | Session                                                                                                          |
+| --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | ![Quick execute page with agent and conversation selectors and a conversation preview panel](docs/assets/quick-execute.png) | ![Session page showing turn-by-turn messages with similarity scores and token metadata](docs/assets/session.png) |
 
 ## Why VIBE?
