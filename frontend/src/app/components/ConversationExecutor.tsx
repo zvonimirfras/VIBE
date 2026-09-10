@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Form, Select, SelectItem, Button, InlineLoading, Tile, Tag, Grid, Column } from '@carbon/react';
 import { PlayFilled, Chat } from '@carbon/icons-react';
 import { api, Conversation } from '@/lib/api';
@@ -9,6 +10,7 @@ import styles from './ConversationExecutor.module.scss';
 import { ExpandableText } from './ExpandableText';
 
 export default function ConversationExecutor() {
+	const router = useRouter();
 	const { agents, fetchAgents } = useAgents();
 
 	// Local state for conversations (not in context yet)
@@ -190,7 +192,14 @@ export default function ConversationExecutor() {
 
 				{error && <Tile className={styles.errorTile}>{error}</Tile>}
 
-				{successMessage && <Tile className={styles.successTile}>{successMessage}</Tile>}
+				{successMessage && (
+					<Tile className={styles.successTile}>
+						<div>{successMessage}</div>
+						<Button kind="tertiary" size="sm" onClick={() => router.push('/jobs')}>
+							View jobs
+						</Button>
+					</Tile>
+				)}
 			</Column>
 
 			<Column sm={4} md={2} lg={8}>
