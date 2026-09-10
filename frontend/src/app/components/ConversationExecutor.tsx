@@ -202,7 +202,7 @@ export default function ConversationExecutor() {
 				</Form>
 
 				{error && <Tile className={styles.errorTile}>{error}</Tile>}
-	
+
 				{successJobId !== null && (
 					<InlineNotification
 						kind="success"
@@ -215,7 +215,10 @@ export default function ConversationExecutor() {
 						<div>
 							<strong>Job #{successJobId} created successfully</strong> and is now queued for execution.
 							<div>
-								<button className={styles.viewJobLink} onClick={() => router.push(`/jobs?highlight=${successJobId}`)}>
+								<button
+									className={styles.viewJobLink}
+									onClick={() => router.push(`/jobs?highlight=${successJobId}`)}
+								>
 									View job #{successJobId} →
 								</button>
 							</div>
@@ -231,10 +234,10 @@ export default function ConversationExecutor() {
 							<Chat size={20} className={styles.headerIcon} />
 							<h4 className={styles.previewTitle}>Conversation preview</h4>
 						</div>
-	
+
 						<div className={styles.previewBody}>
 							<div className={styles.previewName}>{selectedConversation.name}</div>
-	
+
 							{selectedConversation.description && (
 								<div className={styles.previewDescription}>
 									<ExpandableText
@@ -244,7 +247,7 @@ export default function ConversationExecutor() {
 									/>
 								</div>
 							)}
-	
+
 							{formatTags(selectedConversation.tags).length > 0 && (
 								<div className={styles.tagList}>
 									{formatTags(selectedConversation.tags).map((tag, i) => (
@@ -254,7 +257,7 @@ export default function ConversationExecutor() {
 									))}
 								</div>
 							)}
-	
+
 							{loadingConversationDetails ? (
 								<p className={styles.noMessages}>Loading conversation script...</p>
 							) : selectedConversation.messages && selectedConversation.messages.length > 0 ? (
@@ -274,14 +277,16 @@ export default function ConversationExecutor() {
 											>
 												<span
 													className={
-														message.role === 'user'
-															? styles.roleUser
-															: styles.roleAssistant
+														message.role === 'user' ? styles.roleUser : styles.roleAssistant
 													}
 												>
 													{message.role}:
 												</span>{' '}
-												<ExpandableText text={message.content} previewChars={60} threshold={80} />
+												<ExpandableText
+													text={message.content}
+													previewChars={60}
+													threshold={80}
+												/>
 											</li>
 										))}
 										{selectedConversation.messages.length > 3 && (
