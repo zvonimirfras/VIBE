@@ -1,7 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Form, Select, SelectItem, Button, InlineLoading, Tile, Tag, Grid, Column } from '@carbon/react';
+import { useRouter } from 'next/navigation';
+import {
+	Form,
+	Select,
+	SelectItem,
+	Button,
+	InlineLoading,
+	Tile,
+	Tag,
+	Grid,
+	Column,
+	InlineNotification
+} from '@carbon/react';
 import { PlayFilled, Chat } from '@carbon/icons-react';
 import { api, Conversation } from '@/lib/api';
 import { useAgents } from '@/lib/AppDataContext';
@@ -9,6 +21,7 @@ import styles from './ConversationExecutor.module.scss';
 import { ExpandableText } from './ExpandableText';
 
 export default function ConversationExecutor() {
+	const router = useRouter();
 	const { agents, fetchAgents } = useAgents();
 
 	// Local state for conversations (not in context yet)
@@ -21,7 +34,7 @@ export default function ConversationExecutor() {
 	const [selectedConversationId, setSelectedConversationId] = useState<number | undefined>();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+	const [successJobId, setSuccessJobId] = useState<string | null>(null);
 
 	// Fetch data on component mount
 	useEffect(() => {
@@ -84,7 +97,7 @@ export default function ConversationExecutor() {
 	const handleAgentChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
 		setSelectedAgentId(Number(event.target.value));
 		setError(null);
-		setSuccessMessage(null);
+		setSuccessJobId(null);
 	};
 
 	const handleConversationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -98,7 +111,7 @@ export default function ConversationExecutor() {
 			setSelectedConversationId(undefined);
 		}
 		setError(null);
-		setSuccessMessage(null);
+		setSuccessJobId(null);
 	};
 
 	const executeConversation = async () => {
@@ -109,11 +122,11 @@ export default function ConversationExecutor() {
 
 		setIsSubmitting(true);
 		setError(null);
-		setSuccessMessage(null);
+		setSuccessJobId(null);
 
 		try {
 			const job = await api.executeConversation(selectedAgentId, selectedConversationId);
-			setSuccessMessage(`Job #${job.job_id} created successfully and is now queued for execution`);
+			setSuccessJobId(job.job_id);
 		} catch (error) {
 			setError(error instanceof Error ? error.message : 'Failed to execute conversation');
 		} finally {
@@ -190,7 +203,28 @@ export default function ConversationExecutor() {
 
 				{error && <Tile className={styles.errorTile}>{error}</Tile>}
 
-				{successMessage && <Tile className={styles.successTile}>{successMessage}</Tile>}
+				{successJobId !== null && (
+					<InlineNotification
+						kind="success"
+						title=""
+						subtitle=""
+						hideCloseButton={false}
+						onCloseButtonClick={() => setSuccessJobId(null)}
+						style={{ marginTop: '1rem' }}
+					>
+						<div>
+							<strong>Job #{successJobId} created successfully</strong> and is now queued for execution.
+							<div>
+								<button
+									className={styles.viewJobLink}
+									onClick={() => router.push(`/jobs?highlight=${successJobId}`)}
+								>
+									View job #{successJobId} →
+								</button>
+							</div>
+						</div>
+					</InlineNotification>
+				)}
 			</Column>
 
 			<Column sm={4} md={2} lg={8}>
@@ -201,8 +235,9 @@ export default function ConversationExecutor() {
 							<h4 className={styles.previewTitle}>Conversation preview</h4>
 						</div>
 
-						<div className={styles.fieldGroup}>
-							<strong>{selectedConversation.name}</strong>
+						<div className={styles.previewBody}>
+							<div className={styles.previewName}>{selectedConversation.name}</div>
+
 							{selectedConversation.description && (
 								<div className={styles.previewDescription}>
 									<ExpandableText
@@ -212,40 +247,59 @@ export default function ConversationExecutor() {
 									/>
 								</div>
 							)}
-						</div>
 
-						{formatTags(selectedConversation.tags).length > 0 && (
-							<div className={styles.tagList}>
-								{formatTags(selectedConversation.tags).map((tag, i) => (
-									<Tag key={i} type="blue" size="sm" className={styles.tag}>
-										{tag}
-									</Tag>
-								))}
-							</div>
-						)}
-
-						{loadingConversationDetails ? (
-							<p className={styles.noMessages}>Loading conversation script...</p>
-						) : selectedConversation.messages && selectedConversation.messages.length > 0 ? (
-							<div>
-								<strong>Script ({selectedConversation.messages.length} messages):</strong>
-								<ul className={styles.scriptList}>
-									{selectedConversation.messages.slice(0, 3).map((message, i) => (
-										<li key={i} className={styles.scriptItem}>
-											<strong>{message.role}:</strong>{' '}
-											<ExpandableText text={message.content} previewChars={60} threshold={80} />
-										</li>
+							{formatTags(selectedConversation.tags).length > 0 && (
+								<div className={styles.tagList}>
+									{formatTags(selectedConversation.tags).map((tag, i) => (
+										<Tag key={i} type="blue" size="sm">
+											{tag}
+										</Tag>
 									))}
-									{selectedConversation.messages.length > 3 && (
-										<li className={styles.scriptMore}>
-											... and {selectedConversation.messages.length - 3} more messages
-										</li>
-									)}
-								</ul>
-							</div>
-						) : (
-							<p className={styles.noMessages}>No messages defined in this conversation</p>
-						)}
+								</div>
+							)}
+
+							{loadingConversationDetails ? (
+								<p className={styles.noMessages}>Loading conversation script...</p>
+							) : selectedConversation.messages && selectedConversation.messages.length > 0 ? (
+								<div>
+									<div className={styles.scriptLabel}>
+										Script ({selectedConversation.messages.length} messages):
+									</div>
+									<ul className={styles.scriptList}>
+										{selectedConversation.messages.slice(0, 3).map((message, i) => (
+											<li
+												key={i}
+												className={`${styles.scriptItem} ${
+													message.role === 'user'
+														? styles.scriptItemUser
+														: styles.scriptItemAssistant
+												}`}
+											>
+												<span
+													className={
+														message.role === 'user' ? styles.roleUser : styles.roleAssistant
+													}
+												>
+													{message.role}:
+												</span>{' '}
+												<ExpandableText
+													text={message.content}
+													previewChars={60}
+													threshold={80}
+												/>
+											</li>
+										))}
+										{selectedConversation.messages.length > 3 && (
+											<li className={styles.scriptMore}>
+												… and {selectedConversation.messages.length - 3} more messages
+											</li>
+										)}
+									</ul>
+								</div>
+							) : (
+								<p className={styles.noMessages}>No messages defined in this conversation</p>
+							)}
+						</div>
 					</Tile>
 				)}
 			</Column>
